@@ -1,0 +1,131 @@
+---
+title: "Final_Proj"
+author: "Paul Gagliardi"
+date: "8/18/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(MatchIt)
+library(dplyr)
+library(ggplot2)
+library(Rcpp)
+
+```
+
+
+```{r}
+dat.police <- read.csv('vehicle_stops_final_datasd_v1.1_mr.csv')
+```
+
+
+```{r}
+dat.police$subject_race <- as.factor(dat.police$subject_race)
+dat.police$subject_sex <- as.factor(dat.police$subject_sex)
+dat.police$searched <- as.factor(dat.police$searched)
+dat.police$arrested <- as.factor(dat.police$arrested)
+dat.police$service_area <- as.factor(dat.police$service_area)
+```
+
+
+```{r}
+dat.police$subject_race <- recode_factor(dat.police$subject_race,W='W',.default = 'NW')
+```
+```{r}
+dat.police$searched <- recode_factor(dat.police$searched,Y=1,N=0)
+dat.police$arrested <- recode_factor(dat.police$arrested,Y=1,N=0)
+```
+
+```{r}
+str(dat.police)
+```
+model.search.race <- glm(searched ~ subject_race, data = dat.police,family = 'binomial')
+
+
+```{r}
+sex <- unique(dat.police$subject_sex)
+```
+
+```{r}
+male.p.searched <- nrow(subset(dat.police, subject_sex==sex[1] & searched==1))/nrow(subset(dat.police, subject_sex==sex[1]))
+male.p.searched
+```
+
+```{r}
+female.p.searched <- nrow(subset(dat.police, subject_sex==sex[2] & searched==1))/nrow(subset(dat.police, subject_sex==sex[2]))
+female.p.searched
+```
+
+```{r}
+non.p.searched <- nrow(subset(dat.police, subject_race=="NW" & searched==1))/nrow(subset(dat.police, subject_race=="NW"))
+non.p.searched
+```
+```{r}
+white.p.searched <- nrow(subset(dat.police, subject_race=="W" & searched==1))/nrow(subset(dat.police, subject_race=="W"))
+white.p.searched
+```
+```{r}
+male.p.arrested <- nrow(subset(dat.police, subject_sex==sex[1] & arrested==1))/nrow(subset(dat.police, subject_sex==sex[1]))
+male.p.arrested
+```
+
+```{r}
+female.p.arrested <- nrow(subset(dat.police, subject_sex==sex[2] & arrested==1))/nrow(subset(dat.police, subject_sex==sex[2]))
+female.p.arrested
+```
+
+```{r}
+non.p.arrested <- nrow(subset(dat.police, subject_race=="NW" & arrested==1))/nrow(subset(dat.police, subject_race=="NW"))
+non.p.searched
+```
+```{r}
+white.p.arrested <- nrow(subset(dat.police, subject_race=="W" & arrested==1))/nrow(subset(dat.police, subject_race=="W"))
+white.p.arrested
+```
+
+```{r}
+model.match <- matchit(searched ~ subject_race+subject_sex, data = dat.police, ratio = 1, method='nearest')
+summary(model.match)
+```
+```{r}
+model.match.arrest <- matchit(arrested ~ subject_race+subject_sex, data = dat.police, ratio = 1,method='nearest')
+summary(model.match.arrest)
+```
+
+
+```{r}
+plot(model.match, type='hist')
+```
+
+```{r}
+plot(model.match, type='jitter')
+```
+
+```{r}
+plot(model.match.arrest, type='hist')
+```
+
+```{r}
+plot(model.match.arrest, type='jitter')
+```
+
+
+```{r}
+model.match2 <- matchit(searched ~ subject_race+subject_sex, data = dat.police, ratio = 1, method='nearest')
+summary(model.match)
+
+model.match.arrest2 <- matchit(searched ~ subject_race+subject_sex, data = dat.police, ratio = 1, method='nearest')
+summary(model.match)
+
+
+```
+```{r}
+plot(model.match2, type='hist')
+plot(model.match2, type='jitter')
+plot(model.match.arrest2, type='hist')
+plot(model.match.arrest2, type='jitter')
+
+```
+
+
